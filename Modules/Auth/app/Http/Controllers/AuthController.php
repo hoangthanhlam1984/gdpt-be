@@ -3,54 +3,27 @@
 namespace Modules\Auth\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Modules\Auth\Http\Requests\LoginRequest;
+use Modules\Auth\Http\Resources\AuthTokenResource;
+use Modules\Auth\Actions\LoginAction;
 
 class AuthController extends Controller
 {
+    public function __construct(private LoginAction $loginAction) {}
+
     /**
-     * Display a listing of the resource.
+     * Handle user login and return Sanctum token.
      */
-    public function index()
+    public function login(LoginRequest $request)
     {
-        return view('auth::index');
+        $token = $this->loginAction->execute($request->email, $request->password);
+
+        $expiresIn = config('sanctum.expiration');
+        $expiresIn = $expiresIn ? $expiresIn * 60 : null;
+
+        return new AuthTokenResource([
+            'token'      => $token->plainTextToken,
+            'expires_in' => $expiresIn,
+        ]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('auth::create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {}
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('auth::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('auth::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id) {}
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id) {}
 }
