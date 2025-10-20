@@ -29,6 +29,10 @@ class LoginAction
         // Delete previous tokens (optional for security)
         $user->tokens()->delete();
 
+        $user->update([
+            'last_logged_in_at' => now(),
+        ]);
+
         return $user->createToken('api-token');
     }
 }
